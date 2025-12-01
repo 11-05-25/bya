@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validación de Presiones Parciales</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 350px;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #d0e7ff;
+    }
+    input {
+      width: 90%;
+      padding: 5px;
+      text-align: center;
+    }
+    #mensaje {
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Ingresa los valores correctos de las presiones parciales</h2>
+ <h5>Utiliza tres decimales</h5>
+
+  <table>
+    <tr>
+      <th>Gas</th>
+      <th>Presión Parcial (atm)</th>
+    </tr>
+    <tr>
+      <td>N₂</td>
+      <td><input type="number" id="n2" step="0.001" /></td>
+    </tr>
+    <tr>
+      <td>H₂</td>
+      <td><input type="number" id="h2" step="0.001" /></td>
+    </tr>
+    <tr>
+      <td><b>Presión total</b></td>
+      <td><input type="number" id="pt" step="0.001" /></td>
+    </tr>
+  </table>
+
+  <button onclick="validar()">Validar</button>
+  <p id="mensaje"></p>
+
+  <script>
+    function validar() {
+      const n2 = parseFloat(document.getElementById("n2").value);
+      const h2 = parseFloat(document.getElementById("h2").value);
+      const pt = parseFloat(document.getElementById("pt").value);
+
+      const correctN2 = 3.058;
+      const correctH2 = 6.116;
+      const correctPT = 9.174;
+
+      let errores = [];
+
+      if (n2 !== correctN2) errores.push(`N₂ ingresado: ${n2}`);
+      if (h2 !== correctH2) errores.push(`H₂ ingresado: ${h2}`);
+      if (pt !== correctPT) errores.push(`Presión total ingresada: ${pt}`);
+
+      const mensaje = document.getElementById("mensaje");
+
+      if (errores.length === 0) {
+        mensaje.style.color = "green";
+        mensaje.textContent = "Correcto, has acertado";
+        setTimeout(() => {
+          window.location.href = "https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCS1NCc1loOFNiMVpNdG0ifX19";
+        }, 1500);
+      } else {
+        mensaje.style.color = "red";
+        mensaje.textContent = `Valores incorrectos: ${errores.join(", ")}. Por favor, revísalos.`;
+      }
+    }
+  </script>
+</body>
+</html>
