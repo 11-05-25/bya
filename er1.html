@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Verificador de Código — Cofre del gas ideal</title>
+  <style>
+    :root{font-family:Inter,Segoe UI,Roboto,Arial,sans-serif}
+    body{display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8fafc,#eef2ff);margin:0}
+    .card{background:white;padding:28px;border-radius:14px;box-shadow:0 8px 24px rgba(16,24,40,.08);width:min(460px,92%);}
+    h1{font-size:18px;margin:0 0 10px}
+    p.lead{margin:0 0 18px;color:#334155}
+    label{display:block;font-weight:600;margin-bottom:8px}
+    .code-input{width:100%;padding:12px;border-radius:8px;border:1px solid #cbd5e1;font-size:16px;letter-spacing:6px;text-align:center}
+    .actions{display:flex;gap:8px;margin-top:14px}
+    button{flex:1;padding:10px 12px;border-radius:10px;border:0;background:#2563eb;color:white;font-weight:600;cursor:pointer}
+    button.secondary{background:#e2e8f0;color:#0f172a}
+    .msg{margin-top:12px;min-height:20px;font-weight:600}
+    .msg.error{color:#dc2626}
+    .msg.success{color:#15803d}
+    .small{font-size:13px;color:#64748b;margin-top:8px}
+    .inline-input{display:flex;gap:8px;margin-top:12px}
+    .inline-input input{flex:1;padding:8px;border-radius:8px;border:1px solid #cbd5e1}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <h1>Teclea tu resultado</h1>
+    <p class="lead">Introduce los dígitos obtenidos en las preguntas anteriores:</p>
+
+    <form id="codeForm" autocomplete="off">
+      <label for="code">Código (5 dígitos)</label>
+      <input id="code" class="code-input" name="code" inputmode="numeric" pattern="\d{5}" maxlength="5" placeholder="_____" aria-label="Introduce el código de 5 dígitos" required />
+
+      <div class="actions">
+        <button type="submit">Verificar</button>
+        <button type="button" class="secondary" id="resetBtn">Limpiar</button>
+      </div>
+    </form>
+
+    <div id="message" class="msg" aria-live="polite"></div>
+
+    <div class="small">Si el código es correcto el usuario será redirigido a la diapositiva 14 de la presentación de Canva.</div>
+
+    <div id="linkSetter" style="display:none">
+      <div class="inline-input">
+        <input id="userLink" placeholder="Pega aquí el enlace de redirección (https://...)" />
+        <button id="goLink">Ir</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== CONFIGURACIÓN =====
+    // URL de redirección: DIAPOSITIVA 14
+    const redirectURL = 'https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCbVZjMmdaOFNyZ0ZSNUIifX19';
+
+    // Código correcto
+    const CORRECT_CODE = '12735';
+    // ==========================
+
+    const form = document.getElementById('codeForm');
+    const codeInput = document.getElementById('code');
+    const message = document.getElementById('message');
+    const resetBtn = document.getElementById('resetBtn');
+    const linkSetter = document.getElementById('linkSetter');
+    const userLink = document.getElementById('userLink');
+    const goLink = document.getElementById('goLink');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = codeInput.value.trim();
+
+      if (val === CORRECT_CODE) {
+        message.textContent = '¡Código correcto! Redirigiendo...';
+        message.className = 'msg success';
+
+        if (!redirectURL) {
+          message.textContent = 'Código correcto — pega el enlace abajo y luego pulsa "Ir".';
+          linkSetter.style.display = 'block';
+          userLink.focus();
+          return;
+        }
+
+        try {
+          const u = new URL(redirectURL);
+          window.location.href = u.href;
+        } catch (err) {
+          message.textContent = 'La URL de redirección no es válida.';
+          message.className = 'msg error';
+        }
+
+      } else {
+        message.textContent = 'Código incorrecto — inténtalo de nuevo.';
+        message.className = 'msg error';
+        codeInput.value = '';
+        codeInput.focus();
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      codeInput.value = '';
+      message.textContent = '';
+      message.className = 'msg';
+      linkSetter.style.display = 'none';
+    });
+
+    goLink.addEventListener('click', () => {
+      const href = userLink.value.trim();
+      if (!href) return;
+      try {
+        const u = new URL(href);
+        window.location.href = u.href;
+      } catch (err) {
+        message.textContent = 'El enlace pegado no es válido. Debe incluir https://';
+        message.className = 'msg error';
+      }
+    });
+
+    window.addEventListener('load', () => codeInput.focus());
+  </script>
+</body>
+</html>
+
