@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Escape Room — Panel Final (Laboratorio Jurásico)</title>
+<style>
+  :root{--bg:#0f1724;--card:#0b1220;--accent:#16a34a;--danger:#dc2626;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+  body{font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#051222 0%, #071529 100%);color:#e6eef6;margin:0;padding:32px;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .wrap{width:980px;max-width:95%;background:var(--card);border-radius:12px;padding:22px;box-shadow:0 10px 30px rgba(3,7,18,0.6);border:1px solid rgba(255,255,255,0.03)}
+  h1{margin:0 0 8px;font-size:20px}
+  p.lead{margin:0 0 18px;color:var(--muted)}
+  .problems{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+  .card{background:var(--glass);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  .card h3{margin:0 0 6px;font-size:15px}
+  .card p{margin:0 0 10px;color:var(--muted);font-size:13px}
+  label{display:block;font-size:13px;margin-bottom:6px;color:#dfe9fb}
+  input[type="number"]{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff;outline:none;font-size:15px}
+  .controls{display:flex;gap:8px;align-items:center}
+  button{background:linear-gradient(90deg,var(--accent),#2dd4bf);border:none;padding:10px 14px;border-radius:8px;color:#042018;font-weight:700;cursor:pointer}
+  button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#cfe9ff}
+  .msg{margin-top:14px;padding:12px;border-radius:8px;font-weight:600;display:none}
+  .msg.ok{background:rgba(22,163,74,0.12);color:var(--accent);border:1px solid rgba(22,163,74,0.15)}
+  .msg.err{background:rgba(220,38,38,0.08);color:var(--danger);border:1px solid rgba(220,38,38,0.12)}
+  .final-btn{display:none;margin-top:12px}
+  footer{margin-top:14px;color:var(--muted);font-size:13px}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  @media(max-width:760px){.problems{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="wrap" role="main" aria-labelledby="title">
+    <h1 id="title">Panel de escape</h1>
+    <p class="lead">Resuelve los 3 problemas. Introduce los <strong>enteros</strong> (cada resultado convertido según la regla indicada). Si los 3 coinciden, el sistema se restaurará y podrás salir.</p>
+
+    <div class="problems">
+      <!-- Problema A -->
+      <div class="card">
+        <h3>Problema A — Fracción molar de vapor de agua</h3>
+        <p>En equilibrio a 75°C y P = 760 mmHg. La presión de vapor del agua a 75°C es p* = 289.1 mmHg. ¿Cuál es la <em>fracción molar</em> de agua en la fase gaseosa?</p>
+        <p class="hint">Regla para el código: fracción molar × 1000, redondeado al entero.</p>
+        <label for="a">Introduce entero A</label>
+        <input type="number" id="a" inputmode="numeric" autocomplete="off" />
+      </div>
+
+      <!-- Problema B -->
+      <div class="card">
+        <h3>Problema B — Ley de Henry (etano)</h3>
+        <p>Un gas contiene 1.00 mol% de etano (y = 0.01) en contacto con agua a 20.0°C y P = 20.0 atm. H = 2.63×10⁴ atm. Estima la fracción molar disuelta x.</p>
+        <p class="hint">Regla para el código: fracción molar × 1,000,000 (1e6), redondeado al entero.</p>
+        <label for="b">Introduce entero B</label>
+        <input type="number" id="b" inputmode="numeric" autocomplete="off" />
+      </div>
+
+      <!-- Problema C -->
+      <div class="card">
+        <h3>Problema C — Disminución de presión de vapor</h3>
+        <p>Disuelves 218 g de glucosa (M = 180.2 g/mol) en 460 mL de agua (densidad 1.00 g/mL) a 30°C. p°(H₂O,30°C)=31.82 mmHg. Calcula ΔP = p° − p_solution.</p>
+        <p class="hint">Regla para el código: ΔP × 10, redondeado al entero.</p>
+        <label for="c">Introduce entero C</label>
+        <input type="number" id="c" inputmode="numeric" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="checkBtn">Verificar código</button>
+      <button class="secondary" id="showHelp">Mostrar reglas</button>
+      <div style="margin-left:auto;color:var(--muted);font-size:13px">Código final: A - B - C</div>
+    </div>
+
+    <div id="message" class="msg" role="status" aria-live="polite"></div>
+
+    <div id="finalAction" class="final-btn">
+      <p style="margin:0 0 10px">Sistema restaurado. Válvulas cerradas. La cámara se estabiliza. Puerta desbloqueada: salida segura</p>
+      <a id="exitLink" href="https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCakc5c1ZrV1czeDhzNTUifX19" target="_blank" rel="noopener noreferrer">
+        <button id="salirBtn">salir</button>
+      </a>
+    </div>
+
+    <footer>
+      <strong>Notas: Las respuestas están aqui mismo.
+    </footer>
+  </div>
+
+<script>
+/*
+  Validación y cálculo del código esperado (usando los valores del enunciado):
+  - Problema A: y_H2O = p* / P = 289.1 / 760. Código A esperado = round(y_H2O * 1000) => 380
+  - Problema B: x = (y·P) / H  where y=0.01, P=20.0 atm, H=2.63e4 atm.
+               Código B esperado = round(x * 1e6) => approx 8
+  - Problema C: Use moles y Raoult para obtener ΔP ≈ 1.43 mmHg.
+               Código C esperado = round(ΔP * 10) => 14
+*/
+
+function computeExpected() {
+  // Problema A
+  const pstar = 289.1; // mmHg
+  const Ptot = 760; // mmHg
+  const yH2O = pstar / Ptot; // ≈ 0.3801315789
+  const codeA = Math.round(yH2O * 1000); // 380
+
+  // Problema B
+  const y_ethane = 0.01; // mol fraction in gas
+  const P_atm = 20.0; // atm
+  const H_ethane = 2.63e4; // atm (Henry)
+  const x_ethane = (y_ethane * P_atm) / H_ethane; // ≈ 7.60e-6
+  const codeB = Math.round(x_ethane * 1e6); // ≈ 8
+
+  // Problema C
+  // compute moles water and glucose, fraccion mol H2O, p_solution by Raoult, then delta P
+  const mass_glucosa = 218.0; // g
+  const M_glucosa = 180.2; // g/mol
+  const vol_agua_ml = 460.0; // mL
+  const dens_agua = 1.00; // g/mL
+  const mass_agua = vol_agua_ml * dens_agua; // g
+  const moles_H2O = mass_agua / 18.02;
+  const moles_glucosa = mass_glucosa / M_glucosa;
+  const x_H2O = moles_H2O / (moles_H2O + moles_glucosa);
+  const p_pure = 31.82; // mmHg
+  const p_solution = x_H2O * p_pure;
+  const deltaP = p_pure - p_solution; // mmHg (≈1.43)
+  const codeC = Math.round(deltaP * 10); // ≈ 14
+
+  // return expected integers
+  return {A: codeA, B: codeB, C: codeC, debug:{yH2O, x_ethane, x_H2O, p_solution, deltaP}};
+}
+
+document.getElementById('showHelp').addEventListener('click', ()=>{
+  const exp = computeExpected();
+  // show rules in an alert for game-master / debugging (players should not see this normally)
+  alert(
+`Reglas (para organizadores):
+Problema A -> fracción molar × 1000 (round) => A esperado = ${exp.A}
+Problema B -> fracción molar × 1e6 (round) => B esperado = ${exp.B}
+Problema C -> ΔP × 10 (round) => C esperado = ${exp.C}
+
+(Valores calculados internamente para verificación.)`
+  );
+});
+
+document.getElementById('checkBtn').addEventListener('click', ()=>{
+  const aVal = Number(document.getElementById('a').value);
+  const bVal = Number(document.getElementById('b').value);
+  const cVal = Number(document.getElementById('c').value);
+  const msg = document.getElementById('message');
+  const final = document.getElementById('finalAction');
+
+  // inputs must be integers
+  if (!Number.isInteger(aVal) || !Number.isInteger(bVal) || !Number.isInteger(cVal)) {
+    msg.style.display = 'block';
+    msg.className = 'msg err';
+    msg.textContent = 'Introduce tres ENTEROS para A, B y C. Intenta de nuevo.';
+    final.style.display = 'none';
+    return;
+  }
+
+  const expected = computeExpected();
+
+  if (aVal === expected.A && bVal === expected.B && cVal === expected.C) {
+    msg.style.display = 'block';
+    msg.className = 'msg ok';
+    msg.textContent = '¡Correcto! Sistema restaurado. Válvulas cerradas. La cámara se estabiliza.';
+    final.style.display = 'block';
+    // reveal final action and focus the exit button
+    document.getElementById('salirBtn').focus();
+  } else {
+    msg.style.display = 'block';
+    msg.className = 'msg err';
+    msg.textContent = 'Código incorrecto. intenta de nuevo';
+    final.style.display = 'none';
+  }
+});
+
+// OPTIONAL: for convenience, prevent form reload on Enter
+document.querySelectorAll('input').forEach(inp=>{
+  inp.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('checkBtn').click();
+    }
+  });
+});
+</script>
+</body>
+</html>
