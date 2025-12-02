@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🔐 Resuelve para obtener el código</title>
+  <style>
+    :root{
+      --bg: #6ac66b;
+      --accent-red: #e63946;
+      --accent-blue: #1d4ed8;
+      --card: rgba(255,255,255,0.95);
+      --glass: rgba(255,255,255,0.12);
+      --radius: 12px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.14);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg, var(--bg), #5bb65a 60%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color:#062017;
+    }
+
+    .wrap{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+    }
+
+    .panel{
+      width:100%;
+      max-width:920px;
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:28px;
+      box-shadow:var(--shadow);
+      border: 1px solid rgba(0,0,0,0.06);
+      position:relative;
+      overflow:hidden;
+    }
+
+    header.top {
+      display:flex;
+      gap:16px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .logo {
+      width:64px;
+      height:64px;
+      border-radius:12px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+      flex:0 0 64px;
+    }
+
+    h1{
+      font-size:20px;
+      margin:0;
+      color:#062017;
+    }
+    p.lead{
+      margin:4px 0 0 0;
+      color: rgba(6,32,23,0.75);
+      font-size:14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .card{
+      background:var(--glass);
+      padding:16px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.12);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .qnum{
+      width:44px;
+      min-width:44px;
+      height:44px;
+      border-radius:8px;
+      background:linear-gradient(180deg,var(--accent-blue), #2563eb);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-shadow: 0 6px 14px rgba(13,42,148,0.18);
+      flex-shrink:0;
+    }
+
+    .qbody{
+      flex:1;
+    }
+
+    .question{
+      margin:0 0 8px 0;
+      font-weight:600;
+      color:#052017;
+    }
+
+    .options{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    label.option{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      background: rgba(255,255,255,0.9);
+      padding:10px;
+      border-radius:8px;
+      border:2px solid rgba(0,0,0,0.04);
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    label.option:hover{ transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.06); }
+
+    input[type="radio"]{
+      accent-color: var(--accent-red);
+      width:18px;
+      height:18px;
+    }
+
+    .hint{
+      margin-top:12px;
+      font-size:14px;
+      color:#073b2a;
+    }
+
+    .actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:18px;
+      gap:12px;
+    }
+
+    button.btn{
+      background: linear-gradient(90deg,var(--accent-red), #ff5252);
+      color:white;
+      border:none;
+      padding:10px 16px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(230,57,70,0.18);
+    }
+    button.btn.secondary{
+      background: transparent;
+      border:2px solid rgba(6,32,23,0.06);
+      color: #062017;
+      font-weight:600;
+    }
+
+    .feedback{
+      font-weight:700;
+      color:var(--accent-red);
+      display:none;
+      gap:8px;
+      align-items:center;
+    }
+
+    .fine{
+      color: #064e20;
+      font-weight:800;
+      display:none;
+      align-items:center;
+      gap:10px;
+    }
+
+    /* ribbon / verification */
+    .ribbon{
+      position:fixed;
+      right:28px;
+      bottom:28px;
+      background: linear-gradient(90deg, rgba(29,78,216,0.95), rgba(230,57,70,0.95));
+      color:white;
+      padding:14px 18px;
+      border-radius:12px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.26);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      z-index:999;
+      transform: translateY(24px);
+      opacity:0;
+      transition: all .28s cubic-bezier(.2,.9,.25,1);
+    }
+
+    .ribbon.show{
+      transform: translateY(0);
+      opacity:1;
+    }
+
+    .codebadge{
+      background: rgba(255,255,255,0.12);
+      padding:6px 10px;
+      border-radius:8px;
+      font-weight:800;
+      letter-spacing:1px;
+    }
+
+    .advance{
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.14);
+      color: white;
+      padding:8px 12px;
+      border-radius:8px;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    /* responsive */
+    @media (min-width:860px){
+      .grid{ grid-template-columns: repeat(2, 1fr); }
+    }
+
+    footer.note{
+      margin-top:18px;
+      font-size:13px;
+      color: rgba(6,32,23,0.7);
+    }
+
+    .small{
+      font-size:13px;
+      color: rgba(6,32,23,0.6);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="panel" role="main" aria-labelledby="pageTitle">
+      <header class="top">
+        <div class="logo" aria-hidden="true">🔒</div>
+        <div>
+          <h1 id="pageTitle">🔐 Resuelve para obtener el código</h1>
+          <p class="lead">Contexto: Una cámara de incubación jurásica tiene paredes rígidas, pero tiene un pequeño puerto por el que se puede inyectar nutrientes (la masa puede entrar/salir) y la cámara está conectada a un respirador que intercambia calor.</p>
+        </div>
+      </header>
+
+      <form id="quizForm" novalidate>
+        <div class="grid">
+
+          <!-- Q1 -->
+          <div class="card" aria-labelledby="q1">
+            <div class="qnum">1</div>
+            <div class="qbody">
+              <p id="q1" class="question">¿Qué tipo de sistema es?</p>
+              <div class="options" role="radiogroup" aria-labelledby="q1">
+                <label class="option"><input type="radio" name="q1" value="abierto" /> Sistema abierto</label>
+                <label class="option"><input type="radio" name="q1" value="cerrado" /> Sistema cerrado</label>
+                <label class="option"><input type="radio" name="q1" value="aislado" /> Sistema aislado</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="card" aria-labelledby="q2">
+            <div class="qnum">2</div>
+            <div class="qbody">
+              <p id="q2" class="question">¿Qué ley permite comparar temperaturas con un termómetro y decide equilibrio térmico?</p>
+              <div class="options" role="radiogroup" aria-labelledby="q2">
+                <label class="option"><input type="radio" name="q2" value="ley0" /> Ley cero de la termodinámica</label>
+                <label class="option"><input type="radio" name="q2" value="primera" /> Primera ley de la termodinámica</label>
+                <label class="option"><input type="radio" name="q2" value="segunda" /> Segunda ley de la termodinámica</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="card" aria-labelledby="q3">
+            <div class="qnum">3</div>
+            <div class="qbody">
+              <p id="q3" class="question">¿Cómo se llama la cantidad de energía que fluye debido a una diferencia de temperatura?</p>
+              <div class="options" role="radiogroup" aria-labelledby="q3">
+                <label class="option"><input type="radio" name="q3" value="calorVap" /> Calor de vaporización</label>
+                <label class="option"><input type="radio" name="q3" value="delta" /> Delta</label>
+                <label class="option"><input type="radio" name="q3" value="calor" /> Calor (q)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="card" aria-labelledby="q4">
+            <div class="qnum">4</div>
+            <div class="qbody">
+              <p id="q4" class="question">¿Una frontera que no permite transferencia de calor se llama?</p>
+              <div class="options" role="radiogroup" aria-labelledby="q4">
+                <label class="option"><input type="radio" name="q4" value="diabatica" /> Diabática</label>
+                <label class="option"><input type="radio" name="q4" value="adiabatica" /> Adiabática</label>
+                <label class="option"><input type="radio" name="q4" value="transferencia" /> Transferencia de masa</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="card" aria-labelledby="q5">
+            <div class="qnum">5</div>
+            <div class="qbody">
+              <p id="q5" class="question">¿Qué variable es extensiva?</p>
+              <div class="options" role="radiogroup" aria-labelledby="q5">
+                <label class="option"><input type="radio" name="q5" value="presion" /> Presión</label>
+                <label class="option"><input type="radio" name="q5" value="temperatura" /> Temperatura</label>
+                <label class="option"><input type="radio" name="q5" value="volumen" /> Volumen</label>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- grid -->
+
+        <div class="actions">
+          <div class="feedback" id="wrongMsg" role="status" aria-live="polite">❌ Vuelve a intentar — alguna(s) respuesta(s) son incorrectas.</div>
+          <div class="fine" id="okMsg" role="status" aria-live="polite">✅ Muy bien — todas las respuestas son correctas.</div>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button type="button" class="btn secondary" id="resetBtn">Reiniciar</button>
+            <button type="submit" class="btn" id="submitBtn">Verificar respuestas</button>
+          </div>
+        </div>
+
+        <p class="note small">Necesitas responder correctamente las 5 preguntas para obtener el código de verificación.</p>
+      </form>
+
+      <footer class="note">
+        <strong>Guarde el código para su posterior uso.
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Ribbon that appears when all correct -->
+  <div id="ribbon" class="ribbon" role="region" aria-live="polite" aria-hidden="true">
+    <div>
+      <div style="font-size:13px; opacity:0.9">Código de verificación</div>
+      <div class="codebadge" id="codeText">BC20</div>
+    </div>
+    <a id="advanceBtn" class="advance" href="https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCbURDeFdkN3JHOExiQnEifX19" target="_blank" rel="noopener">Avanzar</a>
+  </div>
+
+  <script>
+    (function(){
+      const correctAnswers = {
+        q1: 'abierto',     // Masa puede entrar/salir -> sistema abierto
+        q2: 'ley0',        // Ley cero
+        q3: 'calor',       // Calor (q)
+        q4: 'adiabatica',  // Adiabática
+        q5: 'volumen'      // Volumen es extensiva
+      };
+
+      const form = document.getElementById('quizForm');
+      const wrongMsg = document.getElementById('wrongMsg');
+      const okMsg = document.getElementById('okMsg');
+      const ribbon = document.getElementById('ribbon');
+      const submitBtn = document.getElementById('submitBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      function showWrong(){
+        wrongMsg.style.display = 'flex';
+        okMsg.style.display = 'none';
+        ribbon.classList.remove('show');
+        ribbon.setAttribute('aria-hidden','true');
+      }
+
+      function showCorrect(){
+        wrongMsg.style.display = 'none';
+        okMsg.style.display = 'flex';
+        // show ribbon
+        setTimeout(()=>{
+          ribbon.classList.add('show');
+          ribbon.setAttribute('aria-hidden','false');
+        }, 250);
+      }
+
+      function getAnswers(){
+        return {
+          q1: form.q1.value || null,
+          q2: form.q2.value || null,
+          q3: form.q3.value || null,
+          q4: form.q4.value || null,
+          q5: form.q5.value || null,
+        };
+      }
+
+      function allCorrect(userAnswers){
+        for (const k in correctAnswers){
+          if (!userAnswers[k] || userAnswers[k] !== correctAnswers[k]) return false;
+        }
+        return true;
+      }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const user = getAnswers();
+
+        // Check if all answered
+        const allAnswered = Object.values(user).every(v => v !== null && v !== '');
+        if(!allAnswered){
+          wrongMsg.textContent = '❌ Vuelve a intentar — responde todas las preguntas.';
+          showWrong();
+          return;
+        }
+
+        if(allCorrect(user)){
+          showCorrect();
+        } else {
+          wrongMsg.textContent = '❌ Vuelve a intentar — alguna(s) respuesta(s) son incorrectas.';
+          showWrong();
+        }
+      });
+
+      resetBtn.addEventListener('click', function(){
+        form.reset();
+        wrongMsg.style.display = 'none';
+        okMsg.style.display = 'none';
+        ribbon.classList.remove('show');
+        ribbon.setAttribute('aria-hidden','true');
+      });
+
+      // allow enter to submit on radio selection
+      const radios = form.querySelectorAll('input[type="radio"]');
+      radios.forEach(r => {
+        r.addEventListener('keydown', function(ev){
+          if(ev.key === 'Enter'){
+            ev.preventDefault();
+            submitBtn.click();
+          }
+        });
+      });
+
+      // Accessibility: focus outline visible
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Tab') document.body.classList.add('user-tab');
+      });
+
+    })();
+  </script>
+</body>
+</html>
