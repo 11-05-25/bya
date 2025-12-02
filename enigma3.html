@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Laboratorio Jurásico — Prueba de Presiones</title>
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #000814;
+        color: #a7fff6;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: 40px auto;
+        background-color: #001f29;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px #00eaff;
+        border: 2px solid #00eaff;
+    }
+
+    h1 {
+        text-align: center;
+        color: #00eaff;
+        margin-bottom: 10px;
+    }
+
+    h2 {
+        color: #7dfcff;
+    }
+
+    input[type="text"], input[type="number"] {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 10px;
+        border: 2px solid #00eaff;
+        background-color: #003340;
+        color: #a7fff6;
+        font-size: 16px;
+    }
+
+    button {
+        margin-top: 20px;
+        width: 100%;
+        padding: 15px;
+        background-color: #00eaff;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #001f29;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background-color: #7dfcff;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .error {
+        color: #ff6b6b;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .success {
+        color: #7dfcff;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>LABORATORIO JURÁSICO</h1>
+    <h2>Acceso restringido</h2>
+    <p>Inserta el código de autorización para continuar:</p>
+
+    <input type="text" id="codigo" placeholder="Ingresa el código...">
+    <button onclick="verificarCodigo()">VERIFICAR</button>
+
+    <p id="codigoError" class="error hidden">Código incorrecto. Inténtalo de nuevo.</p>
+
+    <!-- PROBLEMA 1 -->
+    <div id="problema1" class="hidden">
+        <h2>Problema 1 — Mezcla de Gases (Ideal)</h2>
+
+        <p><strong>Contexto:</strong>  
+        Estás monitoreando un cilindro criogénico en el Laboratorio Jurásico que contiene una mezcla de <strong>N₂</strong> y <strong>H₂</strong>.  
+        Debes determinar la presión total y las presiones parciales para estabilizar el contenedor.</p>
+
+        <p><strong>Datos:</strong><br>
+        n₁ (N₂) = 1.0 mol<br>
+        n₂ (H₂) = 2.0 mol<br>
+        T = 298 K<br>
+        V = 8.00 L</p>
+
+        <p><strong>Fórmulas permitidas:</strong><br>
+        • Ley de los gases ideales: <strong>P = nRT / V</strong><br>
+        • Presión parcial: <strong>pᵢ = xᵢ · P</strong><br>
+        (donde xᵢ = fracción molar)</p>
+
+        <p>Introduce los resultados redondeados al número entero más cercano:</p>
+
+        <label>Presión total (atm):</label>
+        <input type="number" id="pt" placeholder="Inserte">
+
+        <label>Presión parcial N₂ (atm):</label>
+        <input type="number" id="pn2" placeholder="Inserte">
+
+        <label>Presión parcial H₂ (atm):</label>
+        <input type="number" id="ph2" placeholder="Inserte">
+
+        <button onclick="verificarRespuestas()">VALIDAR RESULTADOS</button>
+
+        <p id="resultadoError" class="error hidden">Algún valor es incorrecto. Reintenta.</p>
+
+        <div id="avance" class="hidden">
+            <p class="success">¡Correcto! Puedes avanzar.</p>
+            <a href="https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCNGNEdFR6dkpjTFFWY3oifX19" target="_blank">
+                <button>AVANZAR</button>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function verificarCodigo() {
+    const codigo = document.getElementById("codigo").value.trim();
+    const error = document.getElementById("codigoError");
+    const problema = document.getElementById("problema1");
+
+    if (codigo === "BC20") {
+        error.classList.add("hidden");
+        problema.classList.remove("hidden");
+    } else {
+        error.classList.remove("hidden");
+    }
+}
+
+function verificarRespuestas() {
+    const pt = Number(document.getElementById("pt").value);
+    const pn2 = Number(document.getElementById("pn2").value);
+    const ph2 = Number(document.getElementById("ph2").value);
+
+    const error = document.getElementById("resultadoError");
+    const avance = document.getElementById("avance");
+
+    if (pt === 9 && pn2 === 3 && ph2 === 6) {
+        error.classList.add("hidden");
+        avance.classList.remove("hidden");
+    } else {
+        avance.classList.add("hidden");
+        error.classList.remove("hidden");
+    }
+}
+// --- ENTER en código BC20 ---
+document.getElementById("codigo").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        verificarCodigo();
+        // si el código es correcto, enfoca el siguiente campo
+        setTimeout(() => {
+            if (!document.getElementById("problema1").classList.contains("hidden")) {
+                document.getElementById("pt").focus();
+            }
+        }, 200);
+    }
+});
+
+// --- ENTER en Presión Total ---
+document.getElementById("pt").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        document.getElementById("pn2").focus();
+    }
+});
+
+// --- ENTER en Presión Parcial N2 ---
+document.getElementById("pn2").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        document.getElementById("ph2").focus();
+    }
+});
+
+// --- ENTER en Presión Parcial H2 activa VALIDAR RESULTADOS ---
+document.getElementById("ph2").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        verificarRespuestas();
+    }
+});
+
+</script>
+
+</body>
+</html>
