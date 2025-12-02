@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Relaciona fórmulas y enunciados</title>
+  <style>
+    :root{
+      --c1: #c6f7fe;
+      --c2: #bfe6ed;
+      --c3: #b9dfff;
+      --accent: #0b6b75;
+      --bg: #f7fcfd;
+      --card-radius: 12px;
+    }
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial; background:linear-gradient(180deg,var(--c1),var(--c2));}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px;background:rgba(255,255,255,0.7);border-radius:16px;box-shadow:0 6px 20px rgba(11,107,117,0.08)}
+    h1{color:var(--accent);margin:6px 0 18px;font-size:20px}
+    .board{display:flex;gap:20px;align-items:flex-start}
+    .col{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.4));padding:16px;border-radius:var(--card-radius);min-height:360px;position:relative}
+    .col h3{margin:0 0 12px;color:#05393a}
+    ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+    .item{background:var(--c3);padding:12px;border-radius:10px;cursor:pointer;user-select:none;border:2px solid rgba(5,57,58,0.06)}
+    .item.locked{opacity:0.6}
+    .item.selected{outline:3px solid rgba(11,107,117,0.12)}
+    .item.formula{background:linear-gradient(90deg,var(--c2),var(--c1));font-weight:600}
+    .item.text{background:linear-gradient(90deg,var(--c3),#eaf4ff);font-size:14px}
+    .controls{margin-top:14px;display:flex;gap:10px;align-items:center}
+    button{background:var(--accent);color:white;padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:2px solid rgba(11,107,117,0.12)}
+    .status{margin-left:12px;font-weight:700;color:#0f5257}
+    .footer-note{margin-top:16px;padding:12px;border-radius:10px;background:rgba(185,223,255,0.4);font-size:13px}
+
+    /* SVG overlay for lines */
+    .svg-overlay{position:absolute;inset:0;pointer-events:none}
+    .col.right{display:flex;flex-direction:column}
+
+    /* Responsive */
+    @media (max-width:800px){.board{flex-direction:column}.svg-overlay{display:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Relaciona cada <em>fórmula</em> con su <em>enunciado</em></h1>
+    <p>Haz clic en una fórmula (columna izquierda) y después en el enunciado correspondiente (columna derecha). Puedes conectar los pares en cualquier orden.</p>
+
+    <div class="board">
+      <div class="col left" id="leftCol">
+        <h3>Fórmulas</h3>
+        <ul id="formulasList"></ul>
+      </div>
+
+      <div class="col right" id="rightCol">
+        <h3>Enunciados</h3>
+        <ul id="enunciadosList"></ul>
+      </div>
+
+      <!-- SVG overlay for lines (positioned over the two columns) -->
+      <svg class="svg-overlay" id="svg"></svg>
+    </div>
+
+    <div class="controls">
+      <button id="checkBtn">Verificar</button>
+      <button class="ghost" id="resetBtn">Reiniciar</button>
+      <div class="status" id="statusText"></div>
+    </div>
+
+    <div class="footer-note">
+      <strong>Recuerda estas fórmulas:</strong>
+      <ul>
+        <li>V = V₀(1 + αt) — Expansión volumétrica térmica</li>
+        <li>ln P = −Q<sub>vap</sub> / (R T) + ln P₀ — Forma lineal de Clausius–Clapeyron</li>
+        <li>h = 2γ cos θ / (ρ g r) — Capilaridad</li>
+        <li>F = μ (v A / z) — Fuerza viscosa entre placas paralelas</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // DATA (correct pairs)
+    const data = [
+      { id: 'f1', text: 'V = V0 (1 + α t)', enun: 'El volumen de un material se expande linealmente con la temperatura, según su coeficiente de expansión volumétrica.' },
+      { id: 'f2', text: 'ln P = −Qvap / (R T) + ln P0', enun: 'Relaciona la presión de vapor de una sustancia con la temperatura, mostrando que aumenta exponencialmente al incrementar la temperatura.' },
+      { id: 'f3', text: 'h = 2 γ cos θ / (ρ g r)', enun: 'Describe la altura que asciende o desciende un líquido dentro de un tubo capilar debido a fuerzas de tensión superficial.' },
+      { id: 'f4', text: 'F = μ (v A / z)', enun: 'Explica la fuerza viscosa necesaria para mover un fluido entre dos placas paralelas, dependiendo de su viscosidad y del gradiente de velocidad.' }
+    ];
+
+    // Shuffle helper
+    function shuffle(a){
+      const b = a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]} return b;
+    }
+
+    const formulasList = document.getElementById('formulasList');
+    const enunciadosList = document.getElementById('enunciadosList');
+    const svg = document.getElementById('svg');
+    const statusText = document.getElementById('statusText');
+
+    let shuffledFormulas = shuffle(data);
+    let shuffledEnuns = shuffle(data);
+
+    // Current selections and established matches
+    let selectedLeft = null;
+    let selectedRight = null;
+    const matches = {}; // leftId -> rightId
+
+    function render(){
+      formulasList.innerHTML = '';
+      enunciadosList.innerHTML = '';
+
+      shuffledFormulas.forEach(item=>{
+        const li = document.createElement('li');
+        li.className = 'item formula';
+        li.dataset.id = item.id;
+        li.textContent = item.text;
+        li.addEventListener('click', ()=>onLeftClick(li,item.id));
+        formulasList.appendChild(li);
+      });
+
+      shuffledEnuns.forEach(item=>{
+        const li = document.createElement('li');
+        li.className = 'item text';
+        li.dataset.id = item.id;
+        li.innerHTML = item.enun;
+        li.addEventListener('click', ()=>onRightClick(li,item.id));
+        enunciadosList.appendChild(li);
+      });
+
+      drawAllLines();
+    }
+
+    function onLeftClick(el,id){
+      if(matches[id]) return; // already matched
+      clearSelection();
+      selectedLeft = {el,id};
+      el.classList.add('selected');
+    }
+    function onRightClick(el,id){
+      // if right already matched, ignore
+      if(Object.values(matches).includes(id)) return;
+      if(selectedLeft){
+        // create match
+        matches[selectedLeft.id] = id;
+        // mark locked
+        selectedLeft.el.classList.add('locked');
+        el.classList.add('locked');
+        clearSelection();
+        drawAllLines();
+      } else {
+        // allow selecting right first (optional)
+        // we won't support right-first selection to keep UX simple
+      }
+    }
+
+    function clearSelection(){
+      document.querySelectorAll('.item.selected').forEach(x=>x.classList.remove('selected'));
+      selectedLeft = null; selectedRight = null;
+    }
+
+    // Draw lines between matched pairs using SVG
+    function drawAllLines(){
+      // clear svg
+      while(svg.firstChild) svg.removeChild(svg.firstChild);
+      svg.setAttribute('width', document.querySelector('.wrap').clientWidth);
+      svg.setAttribute('height', document.querySelector('.wrap').clientHeight + 40);
+
+      // for each match, find left and right element positions
+      for(const [leftId,rightId] of Object.entries(matches)){
+        const leftEl = document.querySelector('.item.formula[data-id="'+leftId+'"]');
+        const rightEl = document.querySelector('.item.text[data-id="'+rightId+'"]');
+        if(!leftEl || !rightEl) continue;
+        // get bounding boxes relative to svg container
+        const wrapRect = document.querySelector('.wrap').getBoundingClientRect();
+        const l = leftEl.getBoundingClientRect();
+        const r = rightEl.getBoundingClientRect();
+        const x1 = l.right - wrapRect.left;
+        const y1 = l.top + l.height/2 - wrapRect.top;
+        const x2 = r.left - wrapRect.left;
+        const y2 = r.top + r.height/2 - wrapRect.top;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        const dx = Math.abs(x2-x1)*0.5;
+        const d = `M ${x1} ${y1} C ${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`;
+        path.setAttribute('d', d);
+        path.setAttribute('stroke', '#0b6b75');
+        path.setAttribute('stroke-width','3');
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke-linecap','round');
+        svg.appendChild(path);
+      }
+    }
+
+    // Check answers
+    function check(){
+      // need all four matches
+      const correctPairs = data.reduce((acc,it)=>{acc[it.id]=it.id;return acc;},{});
+      // correct mapping is fX -> fX
+      let allMatched = Object.keys(matches).length === data.length;
+      if(!allMatched){
+        statusText.textContent = 'Faltan emparejamientos. Intenta de nuevo.';
+        statusText.style.color = 'crimson';
+        return;
+      }
+
+      // verify each match by comparing ids (since enunciados share same id)
+      let ok = true;
+      for(const [l,r] of Object.entries(matches)){
+        if(l !== r){ ok = false; break; }
+      }
+
+      if(ok){
+        statusText.textContent = '¡Correcto! Redireccionando...';
+        statusText.style.color = 'green';
+        // brief delay then redirect
+        setTimeout(()=>{
+          window.location.href = 'https://www.canva.com/design/DAG58a8fNNg/9_8oKtaqoGSAJAMJXXdg9Q/edit?ui=eyJEIjp7IlQiOnsiQSI6IlBCckdrZ1ljVDNNUjh3OWYifX19';
+        },700);
+      } else {
+        statusText.textContent = 'Incorrecto. Intente de nuevo.';
+        statusText.style.color = 'crimson';
+      }
+    }
+
+    function reset(){
+      // reset matches, unlock items
+      for(const el of document.querySelectorAll('.item.locked')) el.classList.remove('locked');
+      Object.keys(matches).forEach(k=>delete matches[k]);
+      statusText.textContent = '';
+      // reshuffle
+      shuffledFormulas = shuffle(data);
+      shuffledEnuns = shuffle(data);
+      render();
+    }
+
+    // Wire buttons
+    document.getElementById('checkBtn').addEventListener('click', check);
+    document.getElementById('resetBtn').addEventListener('click', reset);
+
+    // Recompute SVG on resize
+    window.addEventListener('resize', ()=>drawAllLines());
+
+    // initial render
+    render();
+  </script>
+</body>
+</html>
